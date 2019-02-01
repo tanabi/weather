@@ -179,7 +179,7 @@ if precip > 0:
 if temp - dew_point < 2:
     message.append("And it is raining.")
 elif temp - dew_point < 5 and  \
-     metar['visibility_statute_mi'] < 2:
+     float(metar['visibility_statute_mi']) < 2:
     message.append("And it is pretty foggy right now.")
 
 m = MCP(config['weather']['muck_host'], config['weather']['muck_port'],
