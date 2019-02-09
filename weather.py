@@ -7,6 +7,7 @@
 from configparser import ConfigParser
 from pyfuzzball.mcp import MCP
 
+import math
 import os
 import requests
 import sys
@@ -175,19 +176,32 @@ if precip > 0:
     message.append("And it is raining.")
 """
 
+is_raining = False
+is_foggy = False
+
 # Do rain based on dew point
 if temp - dew_point < 2:
     message.append("And it is raining.")
+    is_raining = True
 elif temp - dew_point < 5 and  \
      float(metar['visibility_statute_mi']) < 2:
     message.append("And it is pretty foggy right now.")
+    is_foggy = True
 
 m = MCP(config['weather']['muck_host'], config['weather']['muck_port'],
-        config['weather'].get('use_ssl', 0), True)
+        config['weather'].get('use_ssl', False), True)
 m.negotiate(['net-hopeisland-weather'])
 m.call('net-hopeisland-weather', 'set', {
     "auth": config['weather']['mcp_key'],
-    "weather": "  ".join(message)
+    "weather": "  ".join(message),
+    "temp": str(math.floor(temp)),
+    "dewpoint": str(math.floor(dew_point)),
+    "wind_direction": metar['wind_dir_degrees'],
+    "wind_speed": metar['wind_speed_kt'],
+    "wind_gust": str(wind_gust_kt),
+    "clouds": metar["sky_condition_cover"],
+    "raining": str(int(is_raining)),
+    "foggy": str(int(is_foggy))
 })
 
 m.quit()
